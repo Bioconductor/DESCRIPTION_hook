@@ -1,8 +1,22 @@
 #!/usr/bin/env python
 
-# call me like this from the pre-commit file:
 
-# $REPOS/hooks/check_for_bad_version.py "$REPOS" "$TXN" "$SVNLOOK"|| exit 1
+"""
+Rejects version numbers in DESCRIPTION files which:
+- Have more or less than 3 dot-separated segments
+- Have any non-numeric characters within those segments
+- Have a y (in x.y.z) that is even in devel or odd in release
+
+If the commit is rejected, users are referred to
+http://bioconductor.org/developers/how-to/version-numbering/ .
+
+This file lives in https://github.com/Bioconductor/DESCRIPTION_hook.git
+
+This script should be called like this from the pre-commit file:
+
+$REPOS/hooks/DESCRIPTION_hook/check_for_bad_version.py "$REPOS" "$TXN" "$SVNLOOK"|| exit 1
+
+"""
 
 
 from __future__ import print_function
