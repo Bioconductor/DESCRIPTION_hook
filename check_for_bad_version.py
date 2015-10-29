@@ -48,7 +48,6 @@ if (len(diff) > 0):
         if line.startswith("+++"):
             segs0 = line.split()
             filename = segs0[1]
-            sprint(filename)
             segs = filename.split("/")
             if segs[len(segs)-1] == "DESCRIPTION":
                 if (filename.startswith("trunk/madman/Rpacks") and len(segs) == 5)  \
