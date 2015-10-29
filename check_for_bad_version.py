@@ -16,6 +16,10 @@ This script should be called like this from the pre-commit file:
 
 $REPOS/hooks/DESCRIPTION_hook/check_for_bad_version.py "$REPOS" "$TXN" "$SVNLOOK"|| exit 1
 
+TODO:
+In future, perhaps the hook can detect if you are decrementing
+the version number and reject the commit if so.
+
 """
 
 
