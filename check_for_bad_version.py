@@ -10,7 +10,7 @@ Rejects version numbers in DESCRIPTION files which:
 If the commit is rejected, users are referred to
 http://bioconductor.org/developers/how-to/version-numbering/ .
 
-This file lives in https://github.com/Bioconductor/DESCRIPTION_hook.git
+This file lives in https://github.com/Bioconductor/DESCRIPTION_hook
 
 This script should be called like this from the pre-commit file:
 
