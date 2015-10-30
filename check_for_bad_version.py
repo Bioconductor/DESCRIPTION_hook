@@ -32,6 +32,54 @@ import subprocess
 def sprint(*objs):
     print(*objs, file=sys.stderr)
 
+class InvalidSegmentNumberError:
+    '''An invalid BiocVersion - does not have 3 segments'''
+
+class InvalidCharacterError:
+    '''Version has non-numeric character in a segment'''
+
+class BiocVersion:
+    x = 0
+    y = 0
+    z = 0
+
+    def __init__(self, vstr):
+        segs = vstr.split(".")
+        if len(segs) != 3:
+            raise(InvalidSegmentNumberError)
+        for seg in segs:
+            fail = False
+            if '-' in seg:
+                fail = True
+            try:
+                int(seg)
+            except:
+                fail = True
+            if fail:
+                raise(InvalidCharacterError)
+        self.x = int(segs[0])
+        self.y = int(segs[1])
+        self.z = int(segs[2])
+
+    def compare(self, other):
+        if self.x > other.x:
+            return 1
+        if self.x < other.x:
+            return -1
+        if self.x == other.x:
+            if self.y > other.y:
+                return 1
+            if self.y < other.y:
+                return -1
+            if self.y == other.y:
+                if self.z > other.z:
+                    return 1
+                if self.z < other.z:
+                    return -1
+                return 0
+
+    def __str__(self):
+        return str(self.x) + "." + str(self.y) + "." + str(self.z)
 
 repos = sys.argv[1]
 txn = sys.argv[2]
@@ -44,6 +92,7 @@ if (len(diff) > 0):
     filename=None
     looking = False
     release=None
+    oldversion=None
     for line in lines:
         if line.startswith("+++"):
             segs0 = line.split()
@@ -57,10 +106,14 @@ if (len(diff) > 0):
                         release = False
                     else:
                         release = True
+                    oldversion = None
                     looking = True
             else:
                 looking = False
         if looking:
+            if line.startswith("-Version:"):
+                segs1 = line.rstrip().split()
+                oldversion = segs1[len(segs1)-1]
             if line.startswith("+Version:"):
                 segs1 = line.rstrip().split()
                 version = segs1[len(segs1)-1]
