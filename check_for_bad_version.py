@@ -6,6 +6,8 @@ Rejects version numbers in DESCRIPTION files which:
 - Have more or less than 3 dot-separated segments
 - Have any non-numeric characters within those segments
 - Have a y (in x.y.z) that is even in devel or odd in release
+- Have a lower version number than before
+- Change x or y in release
 
 If the commit is rejected, users are referred to
 http://bioconductor.org/developers/how-to/version-numbering/ .
