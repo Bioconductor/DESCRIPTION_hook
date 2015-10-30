@@ -89,7 +89,12 @@ repos = sys.argv[1]
 txn = sys.argv[2]
 svnlook = sys.argv[3]
 
-diff = subprocess.check_output([svnlook, 'diff', '-t', txn, repos])
+try:
+    diff = subprocess.check_output([svnlook, 'diff', '-t', txn, repos])
+except:
+    # if there is a problem running svnlook,
+    # we'll just exit, possibly allowing bad commits!
+    sys.exit(0)
 
 if (len(diff) > 0):
     lines = diff.split("\n")
@@ -104,7 +109,7 @@ if (len(diff) > 0):
             filename = segs0[1]
             segs = filename.split("/")
             if segs[len(segs)-1] == "DESCRIPTION":
-                if (filename.startswith("trunk/madman/Rpacks") and len(segs) == 5)  \
+                if (filename.startswith("trunk/madman/Rpacks/") and len(segs) == 5)  \
                 or (filename.startswith("branches/RELEASE_") and \
                 len(segs) == 6 and segs[2] == "madman"  and segs[3] == "Rpacks"):
                     if len(segs) == 5:
@@ -113,6 +118,7 @@ if (len(diff) > 0):
                         release = True
                     oldversion = None
                     oldbiocversion = None
+                    biocversion = None
                     looking = True
             else:
                 looking = False
@@ -127,24 +133,15 @@ if (len(diff) > 0):
             if line.startswith("+Version:"):
                 segs1 = line.rstrip().split()
                 version = segs1[len(segs1)-1]
-                segs2 = version.split('.')
-                if len(segs2) != 3:
-                    sprint("Malformed version %s in file %s." % (version, filename))
+                try:
+                    biocversion = BiocVersion(version)
+                except InvalidSegmentNumberError:
+                    sprint("Version number should be 3 segments; got %s in file %s." % (version, filename))
                     erxit()
-                for seg in segs2:
-                    fail = False
-                    if '-' in seg:
-                        fail = True
-                    try:
-                        int(seg)
-                    except: 
-                        fail = True
-                    if fail:
-                        sprint("Malformed version %s in file %s." % (version, filename))
-                        erxit()
-                ys = segs2[1]
-                y = int(ys)
-                mod = y % 2
+                except InvalidCharacterError:
+                    sprint("Invalid character(s) in version %s in file %s." % (version, filename))
+                    erxit()
+                mod = biocversion.y % 2
                 if release and mod == 1:
                     sprint("The y in the x.y.z version number should be even in release")
                     sprint("in file %s." % filename)
@@ -153,7 +150,6 @@ if (len(diff) > 0):
                     sprint("The y in the x.y.z version number should be odd in devel")
                     sprint("in file %s." % filename)
                     erxit()
-                biocversion = BiocVersion(version)
                 if (oldbiocversion is not None):
                     if (biocversion.compare(oldbiocversion) == -1):
                         sprint("Can't decrement version from %s to %s." % \
