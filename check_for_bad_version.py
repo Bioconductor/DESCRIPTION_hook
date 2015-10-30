@@ -32,6 +32,12 @@ import subprocess
 def sprint(*objs):
     print(*objs, file=sys.stderr)
 
+def erxit():
+    sprint("See http://bioconductor.org/developers/how-to/version-numbering/")
+    sys.exit(1)
+
+
+
 class InvalidSegmentNumberError:
     '''An invalid BiocVersion - does not have 3 segments'''
 
@@ -44,7 +50,7 @@ class BiocVersion:
     z = 0
 
     def __init__(self, vstr):
-        segs = vstr.split(".")
+        segs = vstr.strip().split(".")
         if len(segs) != 3:
             raise(InvalidSegmentNumberError)
         for seg in segs:
@@ -93,6 +99,7 @@ if (len(diff) > 0):
     looking = False
     release=None
     oldversion=None
+    oldbiocversion=None
     for line in lines:
         if line.startswith("+++"):
             segs0 = line.split()
@@ -107,6 +114,7 @@ if (len(diff) > 0):
                     else:
                         release = True
                     oldversion = None
+                    oldbiocversion = None
                     looking = True
             else:
                 looking = False
@@ -114,14 +122,17 @@ if (len(diff) > 0):
             if line.startswith("-Version:"):
                 segs1 = line.rstrip().split()
                 oldversion = segs1[len(segs1)-1]
+                try:
+                    oldbiocversion = BiocVersion(oldversion)
+                except:
+                    pass
             if line.startswith("+Version:"):
                 segs1 = line.rstrip().split()
                 version = segs1[len(segs1)-1]
                 segs2 = version.split('.')
                 if len(segs2) != 3:
                     sprint("Malformed version %s in file %s." % (version, filename))
-                    sprint("See http://bioconductor.org/developers/how-to/version-numbering/")
-                    sys.exit(1)
+                    erxit()
                 for seg in segs2:
                     fail = False
                     if '-' in seg:
@@ -132,21 +143,32 @@ if (len(diff) > 0):
                         fail = True
                     if fail:
                         sprint("Malformed version %s in file %s." % (version, filename))
-                        sprint("See http://bioconductor.org/developers/how-to/version-numbering/")
-                        sys.exit(1)
+                        erxit()
                 ys = segs2[1]
                 y = int(ys)
                 mod = y % 2
                 if release and mod == 1:
                     sprint("The y in the x.y.z version number should be even in release")
                     sprint("in file %s." % filename)
-                    sprint("See http://bioconductor.org/developers/how-to/version-numbering/")
-                    sys.exit(1)
+                    erxit()
                 if (not release) and mod == 0:
                     sprint("The y in the x.y.z version number should be odd in devel")
                     sprint("in file %s." % filename)
-                    sprint("See http://bioconductor.org/developers/how-to/version-numbering/")
-                    sys.exit(1)
+                    erxit()
+                biocversion = BiocVersion(version)
+                if (oldbiocversion is not None):
+                    if (biocversion.compare(oldbiocversion) == -1):
+                        sprint("Can't decrement version from %s to %s." % \
+                          (oldversion, version))
+                        sprint("Error in file %s." % filename)
+                        erxit()
+                    if release and ((biocversion.x != oldbiocversion.x) \
+                      or (biocversion.y != oldbiocversion.y)):
+                        sprint("x and y of the x.y.z version cannot change in release.")
+                        sprint("Error in file %s." % filename)
+                        erxit()
+
+
 
 sys.exit(0) # just to be explicit
 
