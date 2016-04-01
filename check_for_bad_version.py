@@ -280,6 +280,6 @@ if __name__ == "__main__":
         except:
             # if there is a problem running svnlook,
             # we'll just exit, possibly allowing bad commits!
-            myexit(0)
+            myexit(0, "OK")
     else: # run unit tests
         unittest.main()
