@@ -18,7 +18,7 @@ This script should be called like this from the pre-commit file:
 
 $REPOS/hooks/DESCRIPTION_hook/check_for_bad_version.py "$REPOS" "$TXN" "$SVNLOOK"|| exit 1
 
-You can run this script with no arguments in order 
+You can run this script with no arguments in order
 to run its unit tests.
 
 """
@@ -109,6 +109,12 @@ def process_diff(diff):
         for line in lines:
             if line.startswith("+++"):
                 segs0 = line.split()
+                if len(segs0) < 1:
+                    # For some reason Karim Mezhoud gets hung up here,
+                    # but says 'git diff' produces no output, so it's hard
+                    # to know how to diagnose this. (accessing segs0[1] gives
+                    # an index out of bounds error.) So bail for now.
+                    return(myexit(0, "OK"))
                 filename = segs0[1]
                 segs = filename.split("/")
                 if segs[len(segs)-1] == "DESCRIPTION":
@@ -274,8 +280,6 @@ if __name__ == "__main__":
             # if there is a problem running svnlook,
             # we'll just exit, possibly allowing bad commits!
             myexit(0)
-        process_diff(diff)    
+        process_diff(diff)
     else: # run unit tests
         unittest.main()
-
-
