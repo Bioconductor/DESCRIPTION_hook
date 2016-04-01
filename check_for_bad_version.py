@@ -276,10 +276,10 @@ if __name__ == "__main__":
 
         try:
             diff = subprocess.check_output([svnlook, 'diff', '-t', txn, repos])
+            process_diff(diff)
         except:
             # if there is a problem running svnlook,
             # we'll just exit, possibly allowing bad commits!
             myexit(0)
-        process_diff(diff)
     else: # run unit tests
         unittest.main()
