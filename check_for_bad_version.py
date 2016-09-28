@@ -277,6 +277,8 @@ if __name__ == "__main__":
         try:
             diff = subprocess.check_output([svnlook, 'diff', '-r', txn, repos])
             process_diff(diff)
+        except SystemExit:
+            sys.exit(1)
         except:
             # if there is a problem running svnlook,
             # we'll just exit, possibly allowing bad commits!
