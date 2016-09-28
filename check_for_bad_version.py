@@ -275,7 +275,7 @@ if __name__ == "__main__":
         svnlook = sys.argv[3]
 
         try:
-            diff = subprocess.check_output([svnlook, 'diff', '-t', txn, repos])
+            diff = subprocess.check_output([svnlook, 'diff', '-r', txn, repos])
             process_diff(diff)
         except:
             # if there is a problem running svnlook,
